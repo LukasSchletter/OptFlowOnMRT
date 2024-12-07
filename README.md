@@ -16,3 +16,7 @@ Therefore we are looking for one serie that contains the magnitude images of one
 
 readingDICOM.py will create a folder 'results_slices', where all the 110 slices à 25 images of this serie are saved in npy format for convenience. Note that some information are therefor lost, i.e. age of the child. The code is a bit messy. I cleaned it up somewhat but don't get confused if some unused lists are still there or stuff like that.
 
+# Registration
+
+The current main file for this is sITK_Reg.py. It might be good to formulate files for different Registration methods. 
+
