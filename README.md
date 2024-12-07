@@ -26,4 +26,16 @@ The main idea includes a registration process so the main structures of the imag
 
 differences.py produces these images. 
 
-These images are nice for a chick check whether the registration is good enough (which is not the case right now)
+These images are nice for a quick checkup whether the registration is good enough (which is not the case right now)
+
+# RAFT
+
+RAFT is execuded on calci. I might include the code later if this is necessary. 
+
+
+# Other
+
++ movie.py
+
+You can create a movie for demonstration purposes. Just adjust pathlist (line 37) to the folder with the images you want to put in the movie, the name of the movie (which would also be the path) ( line 39) and 
+make sure you change if necessary the format of the images (line 19).
