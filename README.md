@@ -20,3 +20,10 @@ readingDICOM.py will create a folder 'results_slices', where all the 110 slices 
 
 The current main file for this is sITK_Reg.py. It might be good to formulate files for different Registration methods. 
 
+# Differenz 
+
+The main idea includes a registration process so the main structures of the images almost allign. The small structures will be to small to be registrated. Therefore the flow is measurable with RAFT or a Differenz image. 
+
+differences.py produces these images. 
+
+These images are nice for a chick check whether the registration is good enough (which is not the case right now)
