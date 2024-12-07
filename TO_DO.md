@@ -7,4 +7,3 @@
  - making the comparison of all images
  - experiments with different registration metrices
  - print and read Image Morphing in Deep Feature Spaces: Theory and Applications
- - make git ignore file
