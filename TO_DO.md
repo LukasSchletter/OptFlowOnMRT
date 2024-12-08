@@ -10,10 +10,14 @@
  - files for registration
     + clean up code
     + do some experiments
+      * Thin plate splines 
+      * Smooth the images --> Learn transformation --> apply transformation on original images
+
+- check out parameter map
+- switch to elastix?
 
 
-
- - files for differences
+ 
  - making the comparison of all images
  - experiments with different registration metrices
  - print and read Image Morphing in Deep Feature Spaces: Theory and Applications

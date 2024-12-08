@@ -20,6 +20,13 @@ readingDICOM.py will create a folder 'results_slices', where all the 110 slices 
 
 The current main file for this is sITK_Reg.py. It might be good to formulate files for different Registration methods. 
 
+Since the data folder is dependend on the current date and time you need to change the directory_path (line 51).
+
+Registration manual: file:///Users/LukasSchletter/Downloads/elastix-5.2.0-manual.pdf
+For quick introduction on SITK: https://simpleelastix.readthedocs.io/GettingStarted.html
+
+
+
 # Differenz 
 
 The main idea includes a registration process so the main structures of the images almost allign. The small structures will be to small to be registrated. Therefore the flow is measurable with RAFT or a Differenz image. 
@@ -31,7 +38,7 @@ These images are nice for a quick checkup whether the registration is good enoug
 # RAFT
 
 RAFT is execuded on calci. I might include the code later if this is necessary. 
-
+Paper: https://arxiv.org/pdf/2003.12039
 
 # Other
 

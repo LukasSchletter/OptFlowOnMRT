@@ -1,28 +1,22 @@
 import SimpleITK as sitk
 import sys
-import os
+#import os
 import matplotlib.pyplot as plt
-import itk
+#import itk
 from configparser import ConfigParser
-import numpy as np
-#xximport itkJPEGImageIO
+#import itkJPEGImageIO
 #include <itkJPEGImageIO.h>
-import itk
 from os import listdir
 from packaging.version import parse
 from importlib.metadata import version
-
-if parse(version('itk')) < parse('5.3'):
-    raise ValueError("ITK greater than version 5.3.0 is required for this notebook")
-
 import numpy as np
 #from itkwidgets import view
-from matplotlib import pyplot as plt
 from tqdm import tqdm
 #matplotlib inline
 from ipywidgets import interact
 
-
+if parse(version('itk')) < parse('5.3'):
+    raise ValueError("ITK greater than version 5.3.0 is required for this notebook")
 
 """def command_iteration(method):
     print(
@@ -54,11 +48,11 @@ def main(args):
     name_list = []
     image_npy_list = []
     # middle slices = 48 - 62
-    directory_path = 'resNpSlices/4dflow_KI_20241104-233450/71'
+    directory_path = 'results_slices/4dflow_KI_20241207-124205/71'
     return_list = []
     #name_list.append('reg')
     for dir_content in listdir(directory_path):
-        test = 'test vor variables'
+        
         movarr_loaded = np.load(directory_path +'/' + dir_content)
         movarr_loaded = np.float32(movarr_loaded)
         moving = sitk.GetImageFromArray(movarr_loaded)
@@ -136,6 +130,11 @@ def main(args):
         parameterMapVector.append(sitk.GetDefaultParameterMap("affine"))
         parameterMapVector.append(sitk.GetDefaultParameterMap("bspline"))
         elastixImageFilter.SetParameterMap(parameterMapVector)
+
+        print('printing parameter map:')
+        elastixImageFilter.PrintParameterMap()
+
+        exit()
 
         elastixImageFilter.Execute()
         resultImage = elastixImageFilter.GetResultImage()
