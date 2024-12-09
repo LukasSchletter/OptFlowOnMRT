@@ -92,6 +92,8 @@ def main(args):
 
     for s in tqdm(range(0, len(arr_list), 1)):
         string = directory_path + '/' + name_list[s] + '.npy'
+        print('tqdm')
+        print(tqdm)
         print(string)
         #print(test)
         
@@ -107,10 +109,11 @@ def main(args):
         #print(movarr_loaded[0:35,:])
         #print(movarr_loaded.shape)
         movarr_loaded = np.float32(movarr_loaded)
-        print(movarr_loaded.size)
+        #print(movarr_loaded.size)
         moving = sitk.GetImageFromArray(movarr_loaded)
-        movarr = sitk.GetArrayFromImage(moving)
-        print(movarr.shape)
+        #print(movarr_loaded.size)
+        #movarr = sitk.GetArrayFromImage(moving)
+        #print(movarr.shape)
         #return_list.append(moving)
         #print(moving.GetHeight())
         #print(moving.GetDepth())

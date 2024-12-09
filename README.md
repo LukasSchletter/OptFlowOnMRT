@@ -22,8 +22,10 @@ The current main file for this is sITK_Reg.py. It might be good to formulate fil
 
 Since the data folder is dependend on the current date and time you need to change the directory_path (line 51).
 
-Registration manual: file:///Users/LukasSchletter/Downloads/elastix-5.2.0-manual.pdf
+Registration manual: elastix-5.2.0-manual.pdf which can be found online
 For quick introduction on SITK: https://simpleelastix.readthedocs.io/GettingStarted.html
+
+Transformix might be execuded on smoothed images and apllied to original images.
 
 
 
@@ -38,6 +40,8 @@ These images are nice for a quick checkup whether the registration is good enoug
 # RAFT
 
 RAFT is execuded on calci. I might include the code later if this is necessary. 
+The main file however is R.py which is in the repo.
+
 Paper: https://arxiv.org/pdf/2003.12039
 
 # Other
