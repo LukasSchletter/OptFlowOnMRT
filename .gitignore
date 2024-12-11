@@ -2,4 +2,15 @@
 
 4dflow_KI
 
+
+# output folders
+
 results_slices
+
+elastix_bspline_gridspacing
+
+elastix_bspline
+
+elastix_3d
+
+Reg_3_Bspline
