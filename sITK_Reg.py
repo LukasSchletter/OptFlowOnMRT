@@ -59,6 +59,8 @@ def main():
     
     print(name_list)
     
+    check_its_working = False
+
     return_image_list = []
     for s in tqdm(range(0, len(name_list), 1)):
         string = directory_path + '/' + name_list[s] + '.npy'
@@ -72,19 +74,29 @@ def main():
         
         moving = sitk.GetImageFromArray(movarr_loaded)
         
-        return registration(fixed, moving)
-        # return_image_list.append(registration(fixed, moving))
-        break # it might makes sense to stop after one registration and to check your results
+        reg_img = registration(fixed, moving)
+        reg_img = sitk.GetArrayFromImage(reg_img)
+        #return registration(fixed, moving)
+        return_image_list.append(reg_img)
+
+        plt.imshow(reg_img)
+        plt.savefig('Reg_3_Bspline/' + name_list[s] + '.jpg')
+        np.save('Reg_3_Bspline/' + name_list[s] + '.npy', reg_img)
+        if check_its_working:
+             pass
+             #break # it might makes sense to stop after one registration and to check your results
+        
+        check_its_working = True
+
         
     return return_image_list
 
 
 if __name__ == "__main__":
     print('main:')
-    return_image = main()
-    return_image = sitk.GetArrayFromImage(return_image)
-    plt.imshow(return_image)
-    plt.savefig('sITK_Reg.jpg')
+    return_image_list = main()
+    #return_image = sitk.GetArrayFromImage(return_image)
+    
     print('end of program')
 
 

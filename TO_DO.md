@@ -7,6 +7,8 @@
 
 # Tasks for Lukas
 
+3d registration!
+
  - files for registration
     + clean up code
     + do some experiments
