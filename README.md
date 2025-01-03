@@ -50,3 +50,7 @@ Paper: https://arxiv.org/pdf/2003.12039
 
 You can create a movie for demonstration purposes. Just adjust pathlist (line 37) to the folder with the images you want to put in the movie, the name of the movie (which would also be the path) ( line 39) and 
 make sure you change if necessary the format of the images (line 19).
+
+# Reading about MRT:
+https://www.radiologie-luisenplatz.de/was-ist-mrt
+https://www.youtube.com/watch?v=9PztQ3xoVOk
