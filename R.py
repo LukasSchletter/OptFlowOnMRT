@@ -143,7 +143,7 @@ def main_2(t_1,t_2,counter):
         flow_img = flow_img.numpy()
         flow_img = np.transpose(flow_img, (1,2,0))
         plt.imshow(flow_img)
-        plt.savefig("raft_reg/" + str(counter))
+        plt.savefig("Raft/image_plus_differenz/" + str(counter))
 
         #torch.save(flow_img, "raft_reg_tensor/" + str(counter) +".pt")
         """grid = [img1, flow_img] 
@@ -193,12 +193,12 @@ def load_reg_normal():
     name_list = []
     unsorted_list = []
     image_npy_list = []
-    directory_path = 'reg_normal'
+    directory_path = 'image_plus_differenz'
     return_list = []
     #name_list.append('reg')
     for dir_content in listdir(directory_path):
         print(dir_content)
-        if dir_content.endswith('png'):
+        if dir_content.endswith('jpg'):
             #print('png')
             continue
         else:

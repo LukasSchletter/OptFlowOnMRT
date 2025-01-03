@@ -1,5 +1,5 @@
 # calculating differences
-
+from PIL import Image
 import SimpleITK as sitk
 import sys
 import os
@@ -8,7 +8,7 @@ import matplotlib.image as mpimg
 import itk
 from configparser import ConfigParser
 import numpy as np
-#xximport itkJPEGImageIO
+#import itkJPEGImageIO
 #include <itkJPEGImageIO.h>
 import itk
 from os import listdir
@@ -20,12 +20,11 @@ import torchvision.transforms.functional as F
 if parse(version('itk')) < parse('5.3'):
     raise ValueError("ITK greater than version 5.3.0 is required for this notebook")
 
-import numpy as np
 #from itkwidgets import view
 from matplotlib import pyplot as plt
 
 #matplotlib inline
-from ipywidgets import interact
+#from ipywidgets import interact
 
 
 path_new = 'out_4d_jpg/new_20241114-153739/56_new'
@@ -199,12 +198,12 @@ def difference_reg_normal():
         plt.savefig('diff_images/differences/reg_normal_mean'+'/'+str(ent[0])+'.jpg')
 
 
-def sort_list(path):
+def load_sort_list(path):
     entity_list = []
     for image in listdir(path):
         print(image)
         #imagestring = image.removesuffix('.npy')
-        if image.endswith('.png'):
+        if image.endswith('.jpg'):
             #print('png')
             continue
         else:
@@ -212,8 +211,8 @@ def sort_list(path):
        
         
         print(imagestring)
-        intimagestring = int(imagestring)
-        moving = np.load(path_reg_normal +'/' + image)
+        #intimagestring = int(imagestring)
+        moving = np.load(path +'/' + image)
         print(moving.shape)
         #plt.imshow(moving, cmap='gray')
         #plt.savefig('diff_images/differences/no_diff'+'/'+imagestring+'.jpg')
@@ -225,18 +224,50 @@ def sort_list(path):
     print('sorted')
     return entity_list
 
-def plot_side_by_side(path_1, path_2):
-    for number in range(952,976,1):
-        print(number)
-        f, axarr = plt.subplots(1,2)
-        img1 = mpimg.imread('movie_folder/raft_reg/' + str(number) + '.png')
-        img2 = mpimg.imread('movie_folder/nonreg_raft/' + str(number) + '.png')
-        #imgplot = plt.imshow(img)
-        #plt.show()
-        axarr[0].imshow(img1)
-        axarr[1].imshow(img2)
-        plt.savefig('movie_raft/vergleich/' + str(number) + '.png')
+
+
+def berechne_bild_differenz(bild1, bild2, string):
+    
+    
+    # Sicherstellen, dass die Bilder dieselbe Größe haben
+    if bild1.size != bild2.size:
+        raise ValueError("Die Bilder müssen dieselbe Größe haben")
+    
+    """# In numpy Arrays umwandeln
+    np_bild1 = np.array(bild1)
+    np_bild2 = np.array(bild2)"""
+    
+    # Differenz berechnen (absolute Differenz zwischen den Pixelwerten)
+    differenz = bild1 - bild2
+
+    #print(differenz)
+    differenz = set_values_below_threshold_to_zero(differenz, 1)
+    #print(differenz)
+    bild2 = bild2 + differenz
+    np.save('image_plus_differenz/'+string+ '.npy', bild2 )
+    #exit()
+    plt.imshow(differenz)
+    plt.savefig('image_plus_differenz/'+string+ '.jpg')
+
+    
+def set_values_below_threshold_to_zero(array, threshold):
+    # Set entries smaller than the threshold to zero
+    array[np.abs(array) < threshold] = 0
+    return array
+
 
 if __name__ == "__main__":
-     #difference_reg_normal()
-     plot_side_by_side('movie_folder/nonreg_raft', 'movie_folder/raft_reg')
+     
+    #difference_reg_normal()
+     
+    #ent_list = load_sort_list('elastix_bspline_gridspacing')
+
+    # fixed = 963
+    fixed = np.load('elastix_bspline_gridspacing/963.npy')
+    for k in range(951, 976, 1):
+        print(k)
+        
+        moving = np.load('elastix_bspline_gridspacing/' + str(k) + '.npy')
+        berechne_bild_differenz(fixed, moving, str(k)  )
+
+    
