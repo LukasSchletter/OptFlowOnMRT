@@ -241,14 +241,23 @@ def berechne_bild_differenz(bild1, bild2, string):
     differenz = bild1 - bild2
 
     #print(differenz)
-    differenz = set_values_below_threshold_to_zero(differenz, 1)
+    #differenz = set_values_below_threshold_to_zero(differenz, 1)
     #print(differenz)
     bild2 = bild2 + differenz
-    np.save('image_plus_differenz/'+string+ '.npy', bild2 )
+    np.save('Differenz/bspline/'+string+ '.npy', differenz)
     #exit()
-    plt.imshow(differenz)
-    plt.savefig('image_plus_differenz/'+string+ '.jpg')
+    fig, ax = plt.subplots()  # Create a figure and axis object
+    ax.imshow(differenz, cmap='gray')  # 'gray' colormap for grayscale images
 
+    # Remove the axis
+    ax.axis('off')
+
+    # Adjust the padding to remove the white border
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    plt.show()
+    
+    plt.savefig('Differenz/bspline/'+string+ '.jpg')
+    plt.close()
     
 def set_values_below_threshold_to_zero(array, threshold):
     # Set entries smaller than the threshold to zero
@@ -257,17 +266,18 @@ def set_values_below_threshold_to_zero(array, threshold):
 
 
 if __name__ == "__main__":
-     
+    plt.axis('off')
     #difference_reg_normal()
      
     #ent_list = load_sort_list('elastix_bspline_gridspacing')
 
     # fixed = 963
-    fixed = np.load('elastix_bspline_gridspacing/963.npy')
+    fixed = np.load('elastix_bspline/952.npy')
     for k in range(951, 976, 1):
         print(k)
         
-        moving = np.load('elastix_bspline_gridspacing/' + str(k) + '.npy')
+        moving = np.load('elastix_bspline/' + str(k) + '.npy')
         berechne_bild_differenz(fixed, moving, str(k)  )
+        fixed = moving
 
     

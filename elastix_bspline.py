@@ -88,8 +88,14 @@ def Registration(fixed_image, moving_image, output_dir):
     # Get the result of the registration
     registered_image = elastix_image_filter.GetResultImage()
 
-    metric_value = elastix_image_filter.Get
+   # metric_value = elastix_image_filter.Get
+    # Assuming you have a registered transform after using ImageRegistrationMethod
+    transform = elastix_image_filter.GetTransformParameterMap()
+    print(transform)
 
+    # Save the transform
+    #elastix_image_filter.WriteParameterFile(elastix_image_filter.GetParameterMap(), 'ParameterMap.txt')
+    #sitk.WriteTransform(transform, "TransformParameters.0.txt")
     
     return registered_image
     # Save the registered image
@@ -153,7 +159,7 @@ def main():
     
     name_list = []
 
-    name = input("Please enter the name under which we store the output_file: ")
+    #name = input("Please enter the name under which we store the output_file: ")
 
     for dir_content in listdir(directory_path):
 
@@ -185,7 +191,7 @@ def main():
         reg_img = Registration(fixed, moving, output_dir)
 
         path_log = 'log_file/TransformParameters.0.txt'
-        delete_line_from_file(path_log, 20)
+        #delete_line_from_file(path_log, 20)
 
         reg_img = sitk.GetArrayFromImage(reg_img)
         #return registration(fixed, moving)
@@ -193,15 +199,15 @@ def main():
         
 
         plt.imshow(reg_img)
-        plt.savefig('bspline_normalization/' + name_list[s] + '.jpg')
+        plt.savefig('elastix_bspline/' + name_list[s] + '.jpg')
                    
-        np.save('bspline_normalization/' + name_list[s] + '.npy', reg_img)
+        np.save('elastix_bspline/' + name_list[s] + '.npy', reg_img)
         if check_its_working:
              pass
-             break # it might makes sense to stop after one registration and to check your results
+             #break # it might makes sense to stop after one registration and to check your results
         
         check_its_working = True
-        exit()
+        #exit()
         
     return return_image_list
 
