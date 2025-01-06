@@ -54,9 +54,9 @@ def Registration(fixed_image, moving_image):
 
 # Visualize a middle slice from the z-axis
 def Visualization(fixed_array, registered_array):
-    slice_idx = fixed_image.GetSize()[2] // 2
+    slice_idx = 8 #fixed_array.GetSize()[2] // 2
 
-    plt.figure(figsize=(12, 6))
+    """plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 1)
     plt.imshow(fixed_array[slice_idx, :, :], cmap='gray')
     plt.title('Fixed Image Slice')
@@ -65,7 +65,28 @@ def Visualization(fixed_array, registered_array):
     plt.imshow(registered_array[slice_idx, :, :], cmap='gray')
     plt.title('Registered Moving Image Slice')
 
-    plt.show()
+    plt.subplot(1, 2, 3)
+    plt.imshow(registered_array[slice_idx, :, :], cmap='gray')
+    plt.title('Registered Moving Image Slice')"""
+
+
+    # Create a figure and axes
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+    # Plot the images
+    axes[0].imshow(fixed_array[slice_idx, :, :], cmap='gray')
+    axes[0].axis('off')  # Turn off axis
+    axes[0].set_title('Fixed Image Slice')
+
+    axes[1].imshow(registered_array[slice_idx, :, :], cmap='gray')
+    axes[1].axis('off')  # Turn off axis
+    axes[1].set_title('Registered Moving Image Slice')
+
+    axes[2].imshow(registered_array[slice_idx, :, :], cmap='gray')
+    axes[2].axis('off')  # Turn off axis
+    axes[2].set_title('Moving Image Slice')
+
+    plt.savefig('elastix_3d/3d-reg.jpg')
 
 
 def get3d_48_62(timeslice):
@@ -105,6 +126,7 @@ def main():
     reg_image = Registration(image_fixed, image_moving)
     reg_image = sitk.GetArrayFromImage(reg_image)
     np.save('elastix_3d/' + '7_to_12' + '.npy', reg_image)
+
     return 1
 
     # get fixed - it's better to take an images in the middle, i.e. 951+12 = 963
@@ -153,10 +175,21 @@ def main():
     return return_image_list
 
 
+def load_3d_and_visualize():
+    img_path = 'elastix_3d/7_to_12.npy'
+    img = np.load(img_path)
 
+    time_fixed = 12
+    #time_moving = 7
+    image_fixed = get3d_48_62(time_fixed)
+    image_fixed = sitk.GetArrayFromImage(image_fixed)
+    print(image_fixed.shape)
+    Visualization(image_fixed, img)
 
 if __name__ == "__main__":
 
+    plt.axis('off')
+    #load_3d_and_visualize()
     print('main:')
     return_image_list = main()
     print(return_image_list)
