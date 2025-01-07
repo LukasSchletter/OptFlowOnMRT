@@ -54,3 +54,8 @@ make sure you change if necessary the format of the images (line 19).
 # Reading about MRT:
 https://www.radiologie-luisenplatz.de/was-ist-mrt
 https://www.youtube.com/watch?v=9PztQ3xoVOk
+
+# Visualization
+    Visualization.py gets you the Visualization for 2d images
+
+    For 3d images use 3d_Visualization.py. Note that you first have to slice the image in 2d. Use split_3d.py for this purpose and make sure the paths are matching.

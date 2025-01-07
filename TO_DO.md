@@ -67,7 +67,11 @@
    - groupwise registration (3d)
    - 4d registration
    - normalize registration/smoothing
-   - send thater plays
    - write mail
    - smooth images and apply to original data
    - Metric value abspeichern
+
+# Visualization.py and 3d_Visualization
+   - 2d Do 3 nebeneinander fixed reg, moved
+   - mach raft und differenz für 3d und 2d
+   - schicke mail

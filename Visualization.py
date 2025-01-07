@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import numpy as np
 from os import listdir
+from pathlib import Path
 
 # Create four random images (for demonstration purposes)
 image1 = np.random.rand(10, 10)
@@ -52,6 +53,28 @@ def plot_for_slide():
         img4 = np.load(string + str(k + 3 + 950) + '.npy')
         plot(img1,img2,img3,img4, k)
 
+# Function to visualize the images
+def Visualization(fixed_array, registered_array, moving, k):
+    
+        
+    # Create a figure with 3 subplots (one for each image)
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    
+    # Plot the fixed, registered, and moving images (all slices in the z-axis)
+    axes[0].imshow(fixed_array, cmap='gray')
+    axes[0].axis('off')
+    axes[0].set_title('Fixed Image Slice')
+    
+    axes[1].imshow(registered_array, cmap='gray')
+    axes[1].axis('off')
+    axes[1].set_title('Registered Moving Image Slice')
+    
+    axes[2].imshow(moving, cmap='gray')
+    axes[2].axis('off')
+    axes[2].set_title('Moving Image Slice')
+
+    plt.tight_layout()
+    plt.savefig('elastix_bspline_gridspacing/Visualization/' + str(k) +'.jpg')
 
 def main():
   
@@ -62,14 +85,24 @@ def main():
     
     for k in range(1,26,1): #26
         
-        string = directory_path + '/' + str(k + 950) + '.npy'
-        path_reg = 'elastix_bspline/'
+        moving = directory_path + '/' + str(k + 950) + '.npy'
+        path_reg = 'elastix_bspline_gridspacing/'
         path_raft = 'Raft/elastix_bspline_gridspacing/'
         path_diff = 'Differenz/bspline/'
         #print(string)
         
-        movarr_original = np.load(string)
-        reg = np.load(path_reg + str(k + 950) + '.npy')
+        movarr_original = np.load(moving)
+
+        # chech if registrated images exists and load otherwise continue
+        my_file = Path(path_reg + str(k + 950) + '.npy')
+        if my_file.is_file():
+            reg = np.load(path_reg + str(k + 950) + '.npy')
+        else:
+            print(str(my_file) + ' does not exist')
+            
+            continue
+
+
         if k == 1:
             img_raft_string = path_raft + str(k + 1 + 950) + '.png'
         else:
@@ -80,8 +113,8 @@ def main():
         img_diff_path = path_diff + str(k + 950) + '.jpg'
         img_diff = plt.imread(img_diff_path)
 
-        plot(movarr_original, reg, raft_img, img_diff, k)
-
+        #plot(movarr_original, reg, raft_img, img_diff, k)
+        Visualization(fixed, reg, movarr_original, k + 950)
         plt.close()
 
 if __name__ == "__main__":
