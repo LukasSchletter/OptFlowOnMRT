@@ -8,6 +8,7 @@ from os import listdir
 import sys
 import subprocess
 import collections
+from pathlib import Path
 
 def delete_line_from_file(file_path, line_number):
     """Delete a specific line (by line number) from a text file."""
@@ -46,27 +47,35 @@ def Registration(fixed_image, moving_image, output_dir):
 
     # Define B-spline registration parameters via the parameter file
     # In this case, we are using a B-spline transform with a grid resolution of 5
+    # Define B-spline registration parameters via the parameter file
     parameter_map = sitk.GetDefaultParameterMap('bspline')
     parameter_map['FixedImagePyramid'] = ['FixedSmoothingImagePyramid']
     parameter_map['MovingImagePyramid'] = ['MovingSmoothingImagePyramid']
     
-    parameter_map['Transform'] = ['BSplineTransform']
+    # Define the metric, optimizer, and interpolator
     parameter_map['Metric'] = ['AdvancedMattesMutualInformation']
     parameter_map['Optimizer'] = ['AdaptiveStochasticGradientDescent']
-    parameter_map['NumberOfResolutions'] = ['4']
-    parameter_map['MaximumNumberOfIterations'] = ['2000']
+    parameter_map['NumberOfResolutions'] = ['5']  # Number of multi-resolution levels
+    parameter_map['MaximumNumberOfIterations'] = ['10000']
     parameter_map['Interpolator'] = ['BSplineInterpolator']
-    parameter_map['BSplineInterpolationOrder'] = ['3', '3', '3', '3']
-    #parameter_map['GridSpacing'] = ['5']  # B-spline grid spacing (resolution 5)
-    #parameter_map['GridSpacingSchedule'] = [' 5.0, 5.0, 4.0, 4.0, 2.0 , 2.0 , 1.0, 1.0']
-    parameter_map['FinalGridSpacingInPhysicalUnits'] = ['5']
-    parameter_map['FinalBSplineInterpolationOrder'] = ['5']
-    #parameter_map['PassiveEdgeWidth'] = ['4, 4'] 
-
+    parameter_map['BSplineInterpolationOrder'] = ['3', '3']  # 2D interpolation
+    parameter_map['FinalGridSpacingInPhysicalUnits'] = ['1']
+    parameter_map['InitialTransformParametersFileName'] = ['']
+    
+   
+    # Set GridSpacingSchedule: The number of entries should be NumberOfResolutions * ImageDimension
+    # For 2D images and 5 resolutions, we need 10 values (5 * 2)
+    parameter_map['GridSpacingSchedule'] = ['5.0', '5.0',  # for resolution level 1
+                                            '4.0', '4.0',  # for resolution level 2
+                                            '3.0', '3.0',  # for resolution level 3
+                                            '2.0', '2.0',  # for resolution level 4
+                                            '1.0', '1.0']  # for resolution level 5
     # Add the parameter map to the filter
     elastix_image_filter.SetParameterMap([parameter_map])
     print('printing parameter map:')
     
+    # Specify Affine followed by B-spline transformation
+    parameter_map['Transform'] = ['BSplineTransform']  # Affine, then B-spline
 
     # Print statements will be saved to 'output.log' file
 
@@ -177,6 +186,12 @@ def main():
     
     output_dir = "log_file"
     for s in tqdm(range(0, len(name_list), 1)):
+        my_file = Path("elastix_bspline_gridspacing/" + name_list[s] + ".npy")
+        if my_file.is_file():
+            print(name_list[s] + " exists")
+            continue
+        
+            
         string = directory_path + '/' + name_list[s] + '.npy'
         print('tqdm')
         
@@ -199,9 +214,9 @@ def main():
         
 
         plt.imshow(reg_img)
-        plt.savefig('elastix_bspline/' + name_list[s] + '.jpg')
+        plt.savefig('elastix_bspline_gridspacing/' + name_list[s] + '.jpg')
                    
-        np.save('elastix_bspline/' + name_list[s] + '.npy', reg_img)
+        np.save('elastix_bspline_gridspacing/' + name_list[s] + '.npy', reg_img)
         if check_its_working:
              pass
              #break # it might makes sense to stop after one registration and to check your results
