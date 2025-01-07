@@ -14,3 +14,9 @@ elastix_bspline
 elastix_3d
 
 Reg_3_Bspline
+
+# images
+*.png
+*.jpg
+*.npy
+*.nii
