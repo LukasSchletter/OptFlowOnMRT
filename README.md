@@ -59,3 +59,11 @@ https://www.youtube.com/watch?v=9PztQ3xoVOk
     Visualization.py gets you the Visualization for 2d images
 
     For 3d images use 3d_Visualization.py. Note that you first have to slice the image in 2d. Use split_3d.py for this purpose and make sure the paths are matching.
+
+    3d fixed,reg,mov in elastix_3d/Visu_7_to_12
+    2d fixed,reg,mov in elastix_bspline_gridspacing/Visualization
+
+    Differenz 2d in Differenz/elastix_bspline_gridspacing
+    Differenz 3d in
+
+    Zeige mir die Maske der 3d images

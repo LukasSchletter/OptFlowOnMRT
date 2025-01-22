@@ -72,7 +72,8 @@
    - Metric value abspeichern
 
 # Visualization.py and 3d_Visualization
-   - 2d Do 3 nebeneinander fixed reg, moved
+   
    - run 2d visualization again to get all images
    - mach raft und differenz für 3d und 2d
+   - 2d Do 3 nebeneinander fixed reg, moved + Raft + Differenz
    - schicke mail

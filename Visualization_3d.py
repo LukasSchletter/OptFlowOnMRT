@@ -28,7 +28,7 @@ def get3d_48_62(timeslice):
 
 
 # Function to visualize the images
-def Visualization(fixed_array, registered_array, moving):
+def Visualization(fixed_array, registered_array, moving, output_folder):
     for k in range (0,15,1):
         print(k)
     
@@ -52,16 +52,12 @@ def Visualization(fixed_array, registered_array, moving):
         axes[2].set_title('Moving Image Slice')
 
         plt.tight_layout()
-        plt.savefig('elastix_3d/Visu_7_to_12/' + str(k) +'.jpg')
+        plt.savefig( output_folder + '/' + str(k) +'.jpg')
 
 # Function to load and visualize 3D images
-def load_3d_and_visualize():
-    img_path = 'elastix_3d/7_to_12.npy'
+def load_3d_and_visualize(path_to_registrated_image, time_fixed, time_moving, output_folder):
+    img_path = path_to_registrated_image
     reg_image = np.load(img_path)
-    
-    # Load fixed image at a specific time
-    time_fixed = 12
-    time_moving = 7
     
     # Load fixed and moving 3D images
     image_fixed = get3d_48_62(time_fixed)
@@ -69,10 +65,10 @@ def load_3d_and_visualize():
     image_fixed_array = sitk.GetArrayFromImage(image_fixed)
     image_moving = sitk.GetArrayFromImage(image_moving)
     # Visualize fixed and registered images
-    Visualization(image_fixed_array, reg_image, image_moving)
+    Visualization(image_fixed_array, reg_image, image_moving, output_folder)
 
 if __name__ == "__main__":
-
-    load_3d_and_visualize()  # Visualize fixed and registered images
+    path_to_registrated_image = 'elastix_3d/7_to_12.npy'
+    load_3d_and_visualize(path_to_registrated_image, 12, 7,'elastix_3d/Visu_7_to_12')  # Visualize fixed and registered images
 
     print("End of program")

@@ -3,92 +3,197 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from Visualization_3d import load_3d_and_visualize
+from Visualization_3d import get3d_48_62
+from Visualization_3d import Visualization
 
-# Function to perform B-spline image registration
+def generate_mask(image, mask_filename):
+    # Apply Otsu thresholding to create a binary mask
+    mask = sitk.OtsuThreshold(image, 0, 1)
+    
+    # Perform morphological operations to improve the mask
+    mask_filled = sitk.BinaryFillhole(mask)  # Fill any holes in the mask
+    mask_smooth = sitk.BinaryErode(mask_filled, [2, 2, 2])  # Optional: remove small artifacts with erosion
+    
+    # Save the mask image
+    sitk.WriteImage(mask_smooth, mask_filename)
+    
+    return mask_smooth
+
+def visualize_mask(image, mask, title='Mask Visualization'):
+    # Convert SimpleITK images to numpy arrays
+    image_array = sitk.GetArrayFromImage(image)
+    mask_array = sitk.GetArrayFromImage(mask)
+
+    # Choose a slice to visualize (middle slice)
+    mid_slice = image_array.shape[0] // 2
+
+    # Plot the original image slice and the mask overlay
+    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
+
+    # Display original image slice
+    ax[0].imshow(image_array[mid_slice, :, :], cmap='gray')
+    ax[0].set_title(f"Original Image (Slice {mid_slice})")
+    ax[0].axis('off')
+
+    # Display mask overlay
+    ax[1].imshow(image_array[mid_slice, :, :], cmap='gray')
+    ax[1].imshow(mask_array[mid_slice, :, :], cmap='jet', alpha=0.5)  # Mask overlay with transparency
+    ax[1].set_title(f"Mask Overlay (Slice {mid_slice})")
+    ax[1].axis('off')
+
+    plt.suptitle(title)
+    #plt.imshow()
+    plt.savefig('elastix_3d/masks/test.jpg')
+    print('masks saved')
+
 def Registration(fixed_image, moving_image):
     elastix_image_filter = sitk.ElastixImageFilter()
-    
-    # Define the B-spline registration parameters
-    parameter_map = sitk.GetDefaultParameterMap('bspline')
-    #parameter_map['Transform'] = ['BSplineTransform']
-    parameter_map['Metric'] = ['AdvancedMattesMutualInformation']
-    parameter_map['Optimizer'] = ['AdaptiveStochasticGradientDescent']
-    parameter_map['FixedImagePyramid'] = ['FixedSmoothingImagePyramid']
-    parameter_map['MovingImagePyramid'] = ['MovingSmoothingImagePyramid']
-    parameter_map['NumberOfResolutions'] = ['5']
-    parameter_map['MaximumNumberOfIterations'] = ['10000']  # Increase iterations
-    parameter_map['GridSpacing'] = ['1', '1', '1']  # Finer grid spacing
-    parameter_map['FinalGridSpacingInPhysicalUnits'] = ['1', '1', '1']
-    parameter_map['SplineOrder'] = ['5']
-    parameter_map['Interpolator'] = ['BSplineInterpolator']
-    parameter_map['BSplineInterpolationOrder'] = ['3', '3', '3', '3']
-    parameter_map['GridSpacingSchedule'] = ['5.0', '5.0', '5.0',  # for resolution level 1
-                                            '4.0', '4.0', '4.0',  # for resolution level 2
-                                            '3.0', '3.0', '3.0',  # for resolution level 3
-                                            '2.0', '2.0', '2.0',  # for resolution level 4
-                                            '1.0', '1.0', '1.0']  # for resolution level 5
 
-    parameter_map['InitialTransformParametersFileName'] = ['']
-    parameter_map['Transform'] = ['BSplineTransform']  # First affine, then BSpline
+    # Define file paths to save the mask images
+    fixed_image_mask_path = 'fixed_image_mask.mha'
+    moving_image_mask_path = 'moving_image_mask.mha'
 
-    
-    elastix_image_filter.SetParameterMap([parameter_map])
+    # Generate masks for both fixed and moving images using Otsu thresholding
+    fixed_image_mask = generate_mask(fixed_image, fixed_image_mask_path)
+    moving_image_mask = generate_mask(moving_image, moving_image_mask_path)
+
+    # Visualize the generated masks for both fixed and moving images
+    visualize_mask(fixed_image, fixed_image_mask, title="Fixed Image Mask")
+    visualize_mask(moving_image, moving_image_mask, title="Moving Image Mask")
+
+    # Set the masks for elastix image filter using the ParameterMap
+    affine_parameter_map = sitk.GetDefaultParameterMap('affine')
+    affine_parameter_map['Metric'] = ['AdvancedMattesMutualInformation']
+    affine_parameter_map['Optimizer'] = ['AdaptiveStochasticGradientDescent']
+    affine_parameter_map['MaximumNumberOfIterations'] = ['2000']
+    affine_parameter_map['RelaxationFactor'] = ['0.5']
+    affine_parameter_map['LearningRate'] = ['1.0']
+    #affine_parameter_map['FixedImagePyramid'] = ['FixedIdentityImagePyramid']  # No smoothing pyramid
+    #affine_parameter_map['MovingImagePyramid'] = ['MovingIdentityImagePyramid']  # No smoothing pyramid
+    affine_parameter_map['NumberOfResolutions'] = ['5']
+    affine_parameter_map['InitialTransformParametersFileName'] = ['']
+    affine_parameter_map['Transform'] = ['AffineTransform']
+
+    # Add mask file paths to parameter map
+    #affine_parameter_map['FixedImageMask'] = [fixed_image_mask_path]
+    #affine_parameter_map['MovingImageMask'] = [moving_image_mask_path]
+
+    #exit()
+    # Perform affine registration first
+    elastix_image_filter.SetParameterMap([affine_parameter_map])
     elastix_image_filter.SetFixedImage(fixed_image)
     elastix_image_filter.SetMovingImage(moving_image)
     elastix_image_filter.Execute()
+
+    affine_result_image = elastix_image_filter.GetResultImage()
+    print("Affine Registration complete.")
+
+    #affine_result_image = moving_image #elastix_image_filter.GetResultImage()
     
+
+    # Now apply B-spline registration for finer tuning
+    bspline_parameter_map = sitk.GetDefaultParameterMap('bspline')
+    bspline_parameter_map['Metric'] = ['AdvancedMattesMutualInformation']
+    bspline_parameter_map['Optimizer'] = ['AdaptiveStochasticGradientDescent']
+    bspline_parameter_map['MaximumNumberOfIterations'] = ['50000']
+    bspline_parameter_map['RelaxationFactor'] = ['0.1']  # Try smaller relaxation factor
+    bspline_parameter_map['LearningRate'] = ['0.01']     # Try smaller learning rate
+    #bspline_parameter_map['SmoothingSigmas'] = ['16', '8', '4', '2', '1', '0']
+    #bspline_parameter_map['FixedImagePyramid'] = ['FixedIdentityImagePyramid']  # No smoothing pyramid
+    #bspline_parameter_map['MovingImagePyramid'] = ['MovingIdentityImagePyramid']  
+    bspline_parameter_map['NumberOfResolutions'] = ['1']
+    #bspline_parameter_map['FinalGridSpacingInPhysicalUnits'] = ['1', '1', '1']
+
+    """    # Set initial GridSpacingSchedule for the first resolution level
+        bspline_parameter_map['GridSpacingSchedule'] = [
+            '32.0', '32.0', '32.0',  # Resolution level 1 (coarse)
+            '16.0', '16.0', '16.0',  # Resolution level 2
+            '8.0', '8.0', '8.0',     # Resolution level 3
+            '4.0', '4.0', '4.0',     # Resolution level 4
+            '2.0', '2.0', '2.0',     # Resolution level 5
+            '1.0', '1.0', '1.0'      # Resolution level 6 (fine)
+        ]
+    """
+
+    # Set mask paths for B-spline registration as well
+    #bspline_parameter_map['FixedImageMask'] = [fixed_image_mask_path]
+    #bspline_parameter_map['MovingImageMask'] = [moving_image_mask_path]
+
+
+    # Create a folder to store intermediate results
+    intermediate_results_folder = 'elastix_3d/IntermediateResults/'
+    if not os.path.exists(intermediate_results_folder):
+        os.makedirs(intermediate_results_folder)
+
+    # Set the fixed and moving images and start registration process
+    elastix_image_filter.SetParameterMap([bspline_parameter_map])
+    elastix_image_filter.SetFixedImage(fixed_image)
+    
+
+    current_result_image = affine_result_image
+    # Define SmoothingSigmas for each resolution level
+    #smoothing_sigmas = ['16', '8', '4', '2', '1', '0']  # Define it globally for each resolution
+
+    # Run registration at each resolution level
+    for resolution_level in range(6):
+        print(f"Processing resolution level {resolution_level + 1}...")
+        elastix_image_filter.SetMovingImage(current_result_image)  # Use the affine-registered image
+          # Dynamically adjust the GridSpacingSchedule for each resolution level
+        grid_spacing_schedule = ['16.0', '16.0', '16.0']  # Resolution level 1
+        if resolution_level == 1:
+            grid_spacing_schedule = ['8.0', '8.0', '8.0']  # Resolution level 2
+        elif resolution_level == 2:
+            grid_spacing_schedule = ['4.0', '4.0', '4.0']  # Resolution level 3
+        elif resolution_level == 3:
+            grid_spacing_schedule = ['2.0', '2.0', '2.0']  # Resolution level 4
+        elif resolution_level == 4:
+            grid_spacing_schedule = ['1.0', '1.0', '1.0']  # Resolution level 5
+        elif resolution_level == 5:
+            grid_spacing_schedule = ['0.5', '0.5', '0.5']  # Fine resolution level
+        print('grid')
+        print(int(bspline_parameter_map['NumberOfResolutions'][0]))
+        print(grid_spacing_schedule)
+        
+        bspline_parameter_map['GridSpacingSchedule'] = grid_spacing_schedule
+       # bspline_parameter_map['SmoothingSigmas'] = [smoothing_sigmas[resolution_level]]  # Update smoothing sigmas
+        # Set the updated parameter map for the current resolution level
+        elastix_image_filter.SetParameterMap([bspline_parameter_map])
+
+        # Perform registration for this resolution level
+        elastix_image_filter.Execute()
+
+        # Get and save the intermediate result image at this resolution level
+        current_result_image = elastix_image_filter.GetResultImage()
+        print(f"Resolution Level {resolution_level + 1} Result")
+
+        # Save intermediate result
+        np.save(os.path.join(intermediate_results_folder, f"intermediate_result_level_{resolution_level + 1}.npy"), sitk.GetArrayFromImage(current_result_image))
+
+        visualization_intermediate_results_folder = 'elastix_3d/IntermediateResults/'+str(resolution_level)
+        # Optionally, you can visualize the intermediate results (e.g., using Visualization function)
+        visualize_registration(fixed_image, moving_image, current_result_image, visualization_intermediate_results_folder)
+
     return elastix_image_filter.GetResultImage()
 
-# Function to visualize the images
-def Visualization(fixed_array, registered_array, moving):
-    slice_idx = 8  # You can change this slice index
-    
-    # Create a figure with 3 subplots (one for each image)
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    
-    # Plot the fixed, registered, and moving images (all slices in the z-axis)
-    axes[0].imshow(fixed_array[slice_idx, :, :], cmap='gray')
-    axes[0].axis('off')
-    axes[0].set_title('Fixed Image Slice')
-    
-    axes[1].imshow(registered_array[slice_idx, :, :], cmap='gray')
-    axes[1].axis('off')
-    axes[1].set_title('Registered Moving Image Slice')
-    
-    axes[2].imshow(moving[slice_idx, :, :], cmap='gray')
-    axes[2].axis('off')
-    axes[2].set_title('Moving Image Slice')
+def visualize_registration(fixed_image, moving_image, current_result_image, folder_path):
+    fixed = sitk.GetArrayFromImage(fixed_image)
+    moving = sitk.GetArrayFromImage(moving_image)
+    reg = sitk.GetArrayFromImage(current_result_image)
 
-    plt.tight_layout()
-    plt.savefig('elastix_3d/3d-reg.jpg')
-
-# Function to load 3D data from .npy files
-def get3d_48_62(timeslice):
-    if timeslice < 0 or timeslice > 24:
-        raise IndexError('slices only between 0 and 25')
+    # Check if the folder exists
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
     
-    vectorOfSubImages = sitk.VectorOfImage()
-    path = 'results_slices/4dflow_KI_20241207-124205/'
+    # Visualization function to display the images
+    Visualization(fixed, reg, moving, folder_path)
 
-    for k in range(48, 63):  # Slice numbers between 48 and 62
-        slice_num = 109 - k
-        slicenumber = slice_num * 25 + timeslice
-        k_path = os.path.join(path, str(k), f'{slicenumber}.npy')
-        
-        # Load .npy file and convert to SimpleITK image
-        try:
-            arr_loaded = np.load(k_path)
-            arr_img = sitk.GetImageFromArray(np.float32(arr_loaded))
-            vectorOfSubImages.push_back(arr_img)
-        except FileNotFoundError:
-            print(f"Warning: {k_path} not found. Skipping slice.")
-    
-    return sitk.JoinSeries(vectorOfSubImages)
+
 
 # Main function to perform the registration
 def main():
-    time_fixed = 12
-    time_moving = 7
+    time_fixed = 7
+    time_moving = 12
     
     # Load fixed and moving 3D images
     image_fixed = get3d_48_62(time_fixed)
@@ -107,32 +212,16 @@ def main():
     reg_image_array = sitk.GetArrayFromImage(reg_image)
     
     # Save the registered image as .npy
-    np.save('elastix_3d/7_to_12.npy', reg_image_array)
+    #np.save('elastix_3d/Affine_7_to_12.npy', reg_image_array)
     return reg_image_array
 
-# Function to load and visualize 3D images
-def load_3d_and_visualize():
-    img_path = 'elastix_3d/7_to_12.npy'
-    reg_image = np.load(img_path)
-    
-    # Load fixed image at a specific time
-    time_fixed = 12
-    time_moving = 7
-    
-    # Load fixed and moving 3D images
-    image_fixed = get3d_48_62(time_fixed)
-    image_moving = get3d_48_62(time_moving)
-    image_fixed_array = sitk.GetArrayFromImage(image_fixed)
-    image_moving = sitk.GetArrayFromImage(image_moving)
-    # Visualize fixed and registered images
-    Visualization(image_fixed_array, reg_image, image_moving)
 
 if __name__ == "__main__":
     # Perform registration and visualize the result
 
     # using thinplate? 
 
-    #return_image_list = main()  # Perform registration
-    load_3d_and_visualize()  # Visualize fixed and registered images
+    return_image_list = main()  # Perform registration
+    #load_3d_and_visualize()  # Visualize fixed and registered images
 
     print("End of program")
