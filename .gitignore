@@ -31,3 +31,7 @@ Reg_3_Bspline
 #log
 
 *.log
+
+#__pycache__
+
+*.pyc
