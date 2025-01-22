@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import matplotlib.pyplot as plt
 
 def split_3d_to_2d(input_path, output_dir):
     # Load the 3D image (assuming it's a numpy array)
@@ -18,9 +19,15 @@ def split_3d_to_2d(input_path, output_dir):
 
         # Define the filename for saving the slice
         output_file = os.path.join(output_dir, f"slice_{z:03d}.npy")
+        output_file_jpg = os.path.join(output_dir, f"slice_{z:03d}.jpg")
 
         # Save the 2D slice
         np.save(output_file, slice_2d)
+
+        plt.imshow(slice_2d, cmap='gray')
+        plt.savefig(output_file_jpg)
+
+
         print(f"Saved slice {z} to {output_file}")
 
 def main():

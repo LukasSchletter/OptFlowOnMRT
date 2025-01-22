@@ -20,3 +20,14 @@ Reg_3_Bspline
 *.jpg
 *.npy
 *.nii
+
+# masks
+*.mha
+
+# TransformParameters
+
+*.txt
+
+#log
+
+*.log
